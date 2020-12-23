@@ -1,0 +1,28 @@
+import pytube as pt
+from pytube import YouTube
+
+from .step import Step
+from yt_concate.settings import VIDEOS_DIR
+
+
+class DownloadVideos(Step):
+    def process(self, data, inputs, utils):
+        yt_set = set([found.yt for found in data])
+        print('videos to download =', len(yt_set))
+
+        for yt in yt_set:
+            url = yt.url
+
+            if utils.video_file_exists(yt):
+                print(f'found existing video file for {url}, skipping')
+                continue
+
+            try:
+                print('downloading', url)
+                YouTube(url).streams.first().download(output_path=VIDEOS_DIR, filename=yt.id)
+
+            except KeyError as e:
+                print('Found an Error: ', e, 'while downloading ', url)
+                continue
+
+        return data
